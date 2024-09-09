@@ -1,0 +1,5 @@
+Flask==3.0.3
+Pillow==10.4.0
+hachoir==3.3.0
+python-magic==0.4.27
+gunicorn==20.1.0
