@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify
-from PIL import Image
+from PIL import Image, ExifTags  # Adicione ExifTags aqui
 from hachoir.parser import createParser
 from hachoir.metadata import extractMetadata
 import os
@@ -13,6 +13,7 @@ def extract_image_exif(image_path):
         img = Image.open(image_path)
         exif_data = img._getexif()
         if exif_data:
+            # Converta as tags EXIF para nomes legíveis
             return {ExifTags.TAGS.get(tag): value for tag, value in exif_data.items()}
         return {"error": "No EXIF data found"}
     except Exception as e:
