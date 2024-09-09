@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify
-from PIL import Image, ExifTags  # Adicione ExifTags aqui
+from PIL import Image, ExifTags
 from hachoir.parser import createParser
 from hachoir.metadata import extractMetadata
 import os
@@ -7,14 +7,26 @@ import magic
 
 app = Flask(__name__)
 
+# Função para tornar os dados EXIF serializáveis em JSON
+def make_serializable(exif_data):
+    serializable_data = {}
+    for tag, value in exif_data.items():
+        if isinstance(value, bytes):
+            value = value.decode(errors='ignore')  # Converta bytes para string
+        elif isinstance(value, tuple):
+            value = tuple(float(v) if isinstance(v, IFDRational) else v for v in value)  # Converta IFDRational em float
+        elif isinstance(value, IFDRational):
+            value = float(value)  # Converta IFDRational diretamente em float
+        serializable_data[ExifTags.TAGS.get(tag)] = value
+    return serializable_data
+
 # Função para extrair EXIF de imagens
 def extract_image_exif(image_path):
     try:
         img = Image.open(image_path)
         exif_data = img._getexif()
         if exif_data:
-            # Converta as tags EXIF para nomes legíveis
-            return {ExifTags.TAGS.get(tag): value for tag, value in exif_data.items()}
+            return make_serializable(exif_data)  # Use a função para serializar
         return {"error": "No EXIF data found"}
     except Exception as e:
         return {"error": str(e)}
