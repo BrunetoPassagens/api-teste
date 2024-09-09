@@ -11,13 +11,11 @@ app = Flask(__name__)
 def make_serializable(exif_data):
     serializable_data = {}
     for tag, value in exif_data.items():
-        if isinstance(value, bytes):
-            value = value.decode(errors='ignore')  # Converta bytes para string
-        elif isinstance(value, tuple):
-            value = tuple(float(v) if isinstance(v, IFDRational) else v for v in value)  # Converta IFDRational em float
-        elif isinstance(value, IFDRational):
-            value = float(value)  # Converta IFDRational diretamente em float
-        serializable_data[ExifTags.TAGS.get(tag)] = value
+        try:
+            # Tentativa de converter para string, se falhar, passar
+            serializable_data[ExifTags.TAGS.get(tag)] = str(value)
+        except Exception as e:
+            serializable_data[ExifTags.TAGS.get(tag)] = f"Error converting: {str(e)}"
     return serializable_data
 
 # Função para extrair EXIF de imagens
